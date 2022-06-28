@@ -34,6 +34,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void dispose() {
+    tasks.clear();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     const double fontSize = 24;
     return Scaffold(
@@ -146,6 +152,7 @@ class _HomePageState extends State<HomePage> {
                                                                                   break;
                                                                                 case 'Delete':
                                                                                   _onDeletePressed(i);
+                                                                                  deleteTask(tasks[i].taskId!);
                                                                                   break;
                                                                               }
                                                                             },
@@ -422,5 +429,15 @@ class _HomePageState extends State<HomePage> {
               backgroundColor: MaterialStateProperty.all<Color>(Colors.red)),
           child: const Text('NO'),
         )).show();
+  }
+
+  Future deleteTask(String taskId) async {
+    HttpHelper helper = HttpHelper();
+    var result = await helper.deleteTask(taskId);
+    if (result.statusCode == 201) {
+      setState(() {
+        // serverResponse = result.statusCode;
+      });
+    }
   }
 }

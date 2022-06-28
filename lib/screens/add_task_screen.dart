@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:task_management_v2/data/task.dart';
+import 'dart:convert';
+import '../data/http_helper.dart';
 
 class AddTask extends StatefulWidget {
   const AddTask({Key? key}) : super(key: key);
@@ -15,7 +18,8 @@ class _AddTaskState extends State<AddTask> {
   bool _taskNameHasError = false;
   bool _taskDescriptionHasError = false;
   final FocusNode _tagFocus = FocusNode();
-  List<String> tags = [];
+  List<ITag> tagsList = [];
+  late int serverResponse;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,7 +109,7 @@ class _AddTaskState extends State<AddTask> {
             child: Text('Tags (Optional)',
                 style: TextStyle(fontWeight: FontWeight.w700)),
           ),
-          // start of tags
+          // start of tagsList
           Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
               child: TextFormField(
@@ -114,7 +118,9 @@ class _AddTaskState extends State<AddTask> {
                   onFieldSubmitted: (term) {
                     if (!_tagController.text.isEmpty) {
                       setState(() {
-                        tags.add(_tagController.text);
+                        ITag tag = new ITag('');
+                        tag.tagName = _tagController.text.trim();
+                        tagsList.add(tag);
                         _tagController.clear();
                         _tagFocus.unfocus();
                         FocusScope.of(context).requestFocus(_tagFocus);
@@ -127,26 +133,26 @@ class _AddTaskState extends State<AddTask> {
                     border: OutlineInputBorder(),
                     enabledBorder: InputBorder.none,
                   ))),
-          //end of tags
+          //end of tagsList
 
-          // start of chips for tags
+          // start of chips for tagsList
           Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
               child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(children: [
-                    for (var i = 0; i < tags.length; i++)
+                    for (var i = 0; i < tagsList.length; i++)
                       Padding(
                           padding: const EdgeInsets.only(left: 5),
                           child: InputChip(
-                              label: Text(tags[i]),
+                              label: Text(tagsList[i].tagName),
                               onDeleted: () {
                                 setState(() {
-                                  tags.removeAt(i);
+                                  tagsList.removeAt(i);
                                 });
                               }))
                   ]))),
-          // end of chips for tags
+          // end of chips for tagsList
           Divider(
             indent: 16,
             endIndent: 16,
@@ -158,8 +164,25 @@ class _AddTaskState extends State<AddTask> {
                 style: TextButton.styleFrom(
                     primary: Color(0xffF1FAFF),
                     backgroundColor: Color(0xff009EF7)),
-                onPressed: () {},
-                child: Text('Create',
+                onPressed: () {
+                  postTask();
+                  if (serverResponse == 201) {
+                    SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      content: Row(
+                        children: [
+                          Icon(Icons.check_circle),
+                          Text('Task added successfully')
+                        ],
+                      ),
+                      action: SnackBarAction(
+                        label: 'OKAY',
+                        onPressed: () {},
+                      ),
+                    );
+                  }
+                },
+                child: const Text('Create',
                     style: TextStyle(
                         fontWeight: FontWeight.w700, color: Color(0xffF1FAFF))),
               ))
@@ -167,5 +190,24 @@ class _AddTaskState extends State<AddTask> {
         ],
       )),
     );
+  }
+
+  Future postTask() async {
+    String taskName = _taskNameController.text.trim();
+    String taskDescription = _taskDescriptionController.text.trim();
+    List<ITag> tags = tagsList;
+    ITask newTask = ITask(taskName, taskDescription, tags);
+
+    HttpHelper helper = HttpHelper();
+    var result = await helper.postTask(newTask);
+    if (result.statusCode == 201) {
+      setState(() {
+        _taskNameController.clear();
+        _taskDescriptionController.clear();
+        _tagController.clear();
+        tagsList.clear();
+        serverResponse = result.statusCode;
+      });
+    }
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:badges/badges.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:task_management_v2/screens/home_screen.dart';
+import 'package:task_management_v2/shared/menu_bottom.dart';
 
 import '../data/http_helper.dart';
 import '../data/task.dart';
@@ -21,6 +22,7 @@ class _AllTasksState extends State<AllTasks> {
         appBar: AppBar(
           title: Text('Back'),
         ),
+        bottomNavigationBar: MenuBottom(),
         body: ListView.builder(
           itemCount: tasks.length,
           itemBuilder: (BuildContext context, int index) {
@@ -28,7 +30,7 @@ class _AllTasksState extends State<AllTasks> {
                 padding: const EdgeInsets.only(left: 5, right: 5),
                 child: Slidable(
                     // Specify a key if the Slidable is dismissible.
-                    key: const ValueKey(0),
+                    key: ValueKey(index),
 
                     // The start action pane is the one at the left or the top side.
                     startActionPane: ActionPane(
@@ -36,7 +38,12 @@ class _AllTasksState extends State<AllTasks> {
                       motion: const ScrollMotion(),
 
                       // A pane can dismiss the Slidable.
-                      dismissible: DismissiblePane(onDismissed: () {}),
+                      dismissible: DismissiblePane(onDismissed: () {
+                        setState(() {
+                          deleteTask(tasks[index].taskId!);
+                          tasks.removeAt(index);
+                        });
+                      }),
 
                       // All actions are defined in the children parameter.
                       children: [
@@ -79,19 +86,20 @@ class _AllTasksState extends State<AllTasks> {
                             height: 30,
                             width: 3,
                             decoration: BoxDecoration(
-                                color: _badgeTextColor(tasks[index].status),
+                                color: _badgeTextColor(tasks[index].status!),
                                 borderRadius: BorderRadius.circular(5)),
                           ),
                           trailing: Badge(
                               elevation: 0,
                               toAnimate: false,
                               shape: BadgeShape.square,
-                              badgeColor: _badgeColor(tasks[index].status),
+                              badgeColor: _badgeColor(tasks[index].status!),
                               borderRadius: BorderRadius.circular(3),
                               badgeContent: Text(
-                                tasks[index].status,
+                                tasks[index].status!,
                                 style: TextStyle(
-                                    color: _badgeTextColor(tasks[index].status),
+                                    color:
+                                        _badgeTextColor(tasks[index].status!),
                                     fontWeight: FontWeight.bold),
                               ))),
                     )));
@@ -134,4 +142,14 @@ class _AllTasksState extends State<AllTasks> {
   }
 
   void doNothing(BuildContext context) {}
+
+  Future deleteTask(String taskId) async {
+    HttpHelper helper = HttpHelper();
+    var result = await helper.deleteTask(taskId);
+    if (result.statusCode == 201) {
+      setState(() {
+        // serverResponse = result.statusCode;
+      });
+    }
+  }
 }
