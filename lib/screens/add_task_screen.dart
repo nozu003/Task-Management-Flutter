@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:task_management_v2/data/task.dart';
+import 'package:task_management_v2/screens/home_screen.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 import 'dart:convert';
 import '../data/http_helper.dart';
 
@@ -19,7 +21,6 @@ class _AddTaskState extends State<AddTask> {
   bool _taskDescriptionHasError = false;
   final FocusNode _tagFocus = FocusNode();
   List<ITag> tagsList = [];
-  late int serverResponse;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -166,21 +167,6 @@ class _AddTaskState extends State<AddTask> {
                     backgroundColor: Color(0xff009EF7)),
                 onPressed: () {
                   postTask();
-                  if (serverResponse == 201) {
-                    SnackBar(
-                      behavior: SnackBarBehavior.floating,
-                      content: Row(
-                        children: [
-                          Icon(Icons.check_circle),
-                          Text('Task added successfully')
-                        ],
-                      ),
-                      action: SnackBarAction(
-                        label: 'OKAY',
-                        onPressed: () {},
-                      ),
-                    );
-                  }
                 },
                 child: const Text('Create',
                     style: TextStyle(
@@ -196,7 +182,7 @@ class _AddTaskState extends State<AddTask> {
     String taskName = _taskNameController.text.trim();
     String taskDescription = _taskDescriptionController.text.trim();
     List<ITag> tags = tagsList;
-    ITask newTask = ITask(taskName, taskDescription, tags);
+    ITask newTask = ITask(taskName, taskDescription, tags, TaskStatus.New);
 
     HttpHelper helper = HttpHelper();
     var result = await helper.postTask(newTask);
@@ -206,7 +192,28 @@ class _AddTaskState extends State<AddTask> {
         _taskDescriptionController.clear();
         _tagController.clear();
         tagsList.clear();
-        serverResponse = result.statusCode;
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => HomePage()));
+
+        showTopSnackBar(
+            context,
+            TopSnackBar(
+                child: Card(
+                  child: ListTile(
+                    title: Text('Task added successfully'),
+                    leading: Icon(
+                      Icons.check_circle,
+                      color: Color(0xff50CD89),
+                    ),
+                  ),
+                ),
+                onDismissed: () {},
+                animationDuration: Duration(milliseconds: 550),
+                reverseAnimationDuration: Duration(milliseconds: 550),
+                displayDuration: Duration(milliseconds: 1250),
+                padding: EdgeInsets.all(16),
+                curve: Curves.elasticOut,
+                reverseCurve: Curves.linearToEaseOut));
       });
     }
   }

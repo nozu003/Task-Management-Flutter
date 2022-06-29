@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:badges/badges.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:badges/badges.dart';
+import 'package:flutter/material.dart';
 import 'package:task_management_v2/data/task.dart';
+import 'package:task_management_v2/screens/all_tasks_screen.dart';
+import 'package:task_management_v2/screens/view_task_screen.dart';
 import 'package:task_management_v2/shared/menu_bottom.dart';
 
 import '../data/http_helper.dart';
@@ -13,22 +15,31 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-late List<ITask> tasks = [];
-
 class _HomePageState extends State<HomePage> {
+  late List<ITask> tasks = [];
+
+  callback() {
+    getTasks();
+  }
+
+  Future getTasks() async {
+    HttpHelper helper = HttpHelper();
+    var result = await helper.getTasks();
+    setState(() {
+      tasks.clear();
+      tasks.addAll(result);
+    });
+    //bulk insert
+    // setState(() {
+    // for (var i = 0; i < result.length; i++) {
+    //   tasks.add(result[i]);
+    // }
+    // });
+  }
+
   @override
   void initState() {
     super.initState();
-    Future getTasks() async {
-      HttpHelper helper = HttpHelper();
-      var result = await helper.getTasks();
-      setState(() {
-        for (var i = 0; i < result.length; i++) {
-          tasks.add(result[i]);
-        }
-      });
-    }
-
     // TODO: implement initState
     getTasks();
   }
@@ -43,341 +54,428 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     const double fontSize = 24;
     return Scaffold(
-        appBar: AppBar(title: Text('Task Manager')),
-        backgroundColor: Color(0xfff5f8fa),
-        bottomNavigationBar: MenuBottom(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: FloatingActionButton(
-          elevation: 0,
-          onPressed: () {
-            Navigator.pushNamed(context, '/create');
-          },
-          child: Icon(Icons.add),
-        ),
-        body: SafeArea(
-            child: ListView(children: [
-          Container(
+      appBar: AppBar(title: Text('Task Manager')),
+      backgroundColor: Color(0xfff5f8fa),
+      bottomNavigationBar: MenuBottom(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        elevation: 0,
+        onPressed: () {
+          Navigator.pushNamed(context, '/create');
+        },
+        child: Icon(Icons.add),
+      ),
+      body: SafeArea(
+        child: ListView(
+          children: [
+            Container(
               height: 650,
               // color: Colors.black,
               child: Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Column(children: [
+                padding: const EdgeInsets.all(5),
+                child: Column(
+                  children: [
                     Expanded(
-                        child: Card(
-                            elevation: 6,
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            child: Column(children: [
-                              Container(
-                                  decoration: BoxDecoration(
-                                      color: Color(0xffF8F5FF),
-                                      borderRadius: BorderRadius.circular(10)),
-                                  height: 330,
-                                  child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Column(children: [
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Text('Tasks'),
-                                            ),
-                                            Spacer(),
-                                            IconButton(
-                                                onPressed: () {},
-                                                icon: Icon(Icons.grid_view))
-                                          ],
+                      child: Card(
+                        elevation: 6,
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: Color(0xffF8F5FF),
+                                  borderRadius: BorderRadius.circular(10)),
+                              height: 330,
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text('Tasks'),
                                         ),
-                                        SingleChildScrollView(
-                                            scrollDirection: Axis.horizontal,
-                                            child: Row(children: [
-                                              for (var i = 0;
-                                                  i < tasks.length;
-                                                  i++)
-                                                Container(
-                                                    padding:
-                                                        const EdgeInsets.all(5),
-                                                    height: 250,
-                                                    width: 320,
-                                                    child: Card(
-                                                        elevation: 0,
-                                                        shape: RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10)),
-                                                        child: Container(
-                                                            decoration: BoxDecoration(
-                                                                color: _toDoColorsEnd(
-                                                                    i),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            10)),
-                                                            child: Padding(
-                                                                padding:
-                                                                    const EdgeInsets.only(
-                                                                        top: 10,
-                                                                        left:
-                                                                            10),
-                                                                child: Column(
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .start,
-                                                                    children: [
+                                      ],
+                                    ),
+                                    SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        children: [
+                                          for (var i = 0; i < tasks.length; i++)
+                                            GestureDetector(
+                                              onTap: () => Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          ViewTask(
+                                                            taskId: tasks[i]
+                                                                .taskId!,
+                                                          ))),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.all(5),
+                                                height: 250,
+                                                width: 320,
+                                                child: Card(
+                                                  elevation: 0,
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10)),
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        color:
+                                                            _toDoColorsEnd(i),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10)),
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 10,
+                                                              left: 10),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              Container(
+                                                                height: 40,
+                                                                width: 40,
+                                                                decoration: const BoxDecoration(
+                                                                    color: Colors
+                                                                        .green,
+                                                                    borderRadius:
+                                                                        BorderRadius.all(
+                                                                            Radius.circular(5))),
+                                                              ),
+                                                              const Spacer(
+                                                                flex: 1,
+                                                              ),
+                                                              PopupMenuButton(
+                                                                onSelected:
+                                                                    (value) {
+                                                                  switch (
+                                                                      value) {
+                                                                    case 'Update':
+                                                                      Navigator.pushNamed(
+                                                                          context,
+                                                                          '/update');
+                                                                      break;
+                                                                    case 'Delete':
+                                                                      _onDeletePressed(
+                                                                          i);
+                                                                      break;
+                                                                  }
+                                                                },
+                                                                icon: Icon(
+                                                                  Icons
+                                                                      .more_vert,
+                                                                  color:
+                                                                      _taskTextColor(
+                                                                          i),
+                                                                ),
+                                                                itemBuilder:
+                                                                    (BuildContext
+                                                                            context) =>
+                                                                        <PopupMenuEntry>[
+                                                                  const PopupMenuItem(
+                                                                    value:
+                                                                        'Update',
+                                                                    child:
+                                                                        ListTile(
+                                                                      title: Text(
+                                                                          'Update'),
+                                                                    ),
+                                                                  ),
+                                                                  const PopupMenuItem(
+                                                                    value:
+                                                                        'Delete',
+                                                                    child:
+                                                                        ListTile(
+                                                                      title: Text(
+                                                                          'Delete'),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              const Padding(
+                                                                  padding:
+                                                                      EdgeInsets
+                                                                          .all(
+                                                                              5)),
+                                                              Text(
+                                                                tasks[i]
+                                                                    .taskName,
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        fontSize,
+                                                                    color:
+                                                                        _taskTextColor(
+                                                                            i)),
+                                                              ),
+                                                              Text(
+                                                                  tasks[i]
+                                                                      .taskDescription,
+                                                                  style: TextStyle(
+                                                                      color: _taskTextColor(
+                                                                          i))),
+                                                            ],
+                                                          ),
+                                                          Spacer(),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .only(
+                                                                    bottom:
+                                                                        10.0),
+                                                            child: Row(
+                                                              children: [
+                                                                Badge(
+                                                                  toAnimate:
+                                                                      false,
+                                                                  shape:
+                                                                      BadgeShape
+                                                                          .square,
+                                                                  badgeColor:
+                                                                      _toDoColorsStart(
+                                                                          i),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              5),
+                                                                  badgeContent:
                                                                       Row(
-                                                                        children: [
-                                                                          Container(
-                                                                            height:
-                                                                                40,
-                                                                            width:
-                                                                                40,
-                                                                            decoration:
-                                                                                const BoxDecoration(color: Colors.green, borderRadius: BorderRadius.all(Radius.circular(5))),
-                                                                          ),
-                                                                          const Spacer(
-                                                                            flex:
-                                                                                1,
-                                                                          ),
-                                                                          PopupMenuButton(
-                                                                            onSelected:
-                                                                                (value) {
-                                                                              switch (value) {
-                                                                                case 'Update':
-                                                                                  Navigator.pushNamed(context, '/update');
-                                                                                  break;
-                                                                                case 'Delete':
-                                                                                  _onDeletePressed(i);
-                                                                                  deleteTask(tasks[i].taskId!);
-                                                                                  break;
-                                                                              }
-                                                                            },
-                                                                            icon:
-                                                                                Icon(
-                                                                              Icons.more_vert,
-                                                                              color: _taskTextColor(i),
-                                                                            ),
-                                                                            itemBuilder: (BuildContext context) =>
-                                                                                <PopupMenuEntry>[
-                                                                              const PopupMenuItem(
-                                                                                value: 'Update',
-                                                                                child: ListTile(
-                                                                                  title: Text('Update'),
-                                                                                ),
-                                                                              ),
-                                                                              const PopupMenuItem(
-                                                                                value: 'Delete',
-                                                                                child: ListTile(
-                                                                                  title: Text('Delete'),
-                                                                                ),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                      Column(
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.start,
-                                                                        children: [
-                                                                          const Padding(
-                                                                              padding: EdgeInsets.all(5)),
-                                                                          Text(
-                                                                            tasks[i].taskName,
-                                                                            style:
-                                                                                TextStyle(fontSize: fontSize, color: _taskTextColor(i)),
-                                                                          ),
-                                                                          Text(
-                                                                              tasks[i].taskDescription,
-                                                                              style: TextStyle(color: _taskTextColor(i))),
-                                                                        ],
-                                                                      ),
-                                                                      Spacer(),
+                                                                    children: [
+                                                                      Icon(Icons
+                                                                          .calendar_month),
                                                                       Padding(
-                                                                          padding: const EdgeInsets.only(
-                                                                              bottom:
-                                                                                  10.0),
-                                                                          child:
-                                                                              Row(children: [
-                                                                            Badge(
-                                                                                toAnimate: false,
-                                                                                shape: BadgeShape.square,
-                                                                                badgeColor: _toDoColorsStart(i),
-                                                                                borderRadius: BorderRadius.circular(5),
-                                                                                badgeContent: Row(children: [
-                                                                                  Icon(Icons.calendar_month),
-                                                                                  Padding(padding: EdgeInsets.only(left: 5)),
-                                                                                  Text(tasks[i].dateCreated.toString(), style: TextStyle(color: Colors.black)),
-                                                                                ]))
-                                                                          ]))
-                                                                    ])))))
-                                            ]))
-                                      ]))),
-                              Container(
-                                child: Expanded(
-                                    child: Row(
+                                                                          padding:
+                                                                              EdgeInsets.only(left: 5)),
+                                                                      Text(
+                                                                          tasks[i]
+                                                                              .dateCreated
+                                                                              .toString(),
+                                                                          style:
+                                                                              TextStyle(color: Colors.black)),
+                                                                    ],
+                                                                  ),
+                                                                )
+                                                              ],
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Container(
+                              child: Expanded(
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(5),
+                                        child: Card(
+                                          color: Color(0xffFFF8DD),
+                                          elevation: 0.0,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10)),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Icon(
+                                                  Icons.pending_actions,
+                                                  size: 40,
+                                                  color: Color(0xffFFC700),
+                                                ),
+                                                Padding(
+                                                    padding: EdgeInsets.all(5)),
+                                                const Text('In-Progress Tasks',
+                                                    style: TextStyle(
+                                                        color:
+                                                            Color(0xffFFC700),
+                                                        letterSpacing: .5,
+                                                        fontWeight:
+                                                            FontWeight.bold))
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(5),
+                                        child: Card(
+                                          color: Color(0xffF1FAFF),
+                                          elevation: 0.0,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10)),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Icon(
+                                                  Icons.fiber_new_rounded,
+                                                  size: 40,
+                                                  color: Color(0xff009EF7),
+                                                ),
+                                                Padding(
+                                                    padding: EdgeInsets.all(5)),
+                                                const Text('New Tasks',
+                                                    style: TextStyle(
+                                                        color:
+                                                            Color(0xff009EF7),
+                                                        letterSpacing: .5,
+                                                        fontWeight:
+                                                            FontWeight.bold))
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Container(
+                              child: Expanded(
+                                child: Row(
                                   children: [
                                     Expanded(
                                         child: Padding(
                                       padding: const EdgeInsets.all(5),
-                                      child: Card(
-                                        color: Color(0xffFFF8DD),
-                                        elevation: 0.0,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10)),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(10),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Icon(
-                                                Icons.pending_actions,
-                                                size: 40,
-                                                color: Color(0xffFFC700),
-                                              ),
-                                              Padding(
-                                                  padding: EdgeInsets.all(5)),
-                                              const Text('In-Progress Tasks',
+                                      child: GestureDetector(
+                                        onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => AllTasks(
+                                                    tasks: tasks,
+                                                    callbackFn: callback))),
+                                        child: Card(
+                                          color: Color(0xffFFF5F8),
+                                          elevation: 0.0,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10)),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Icon(
+                                                  Icons.task,
+                                                  size: 40,
+                                                  color: Color(0xffF1416C),
+                                                ),
+                                                Padding(
+                                                    padding: EdgeInsets.all(5)),
+                                                const Text(
+                                                  'View Tasks',
                                                   style: TextStyle(
-                                                      color: Color(0xffFFC700),
+                                                      color: Color(0xffF1416C),
                                                       letterSpacing: .5,
                                                       fontWeight:
-                                                          FontWeight.bold))
-                                            ],
+                                                          FontWeight.bold),
+                                                )
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
                                     )),
                                     Expanded(
-                                        child: Padding(
-                                      padding: const EdgeInsets.all(5),
-                                      child: Card(
-                                        color: Color(0xffF1FAFF),
-                                        elevation: 0.0,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10)),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(10),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Icon(
-                                                Icons.fiber_new_rounded,
-                                                size: 40,
-                                                color: Color(0xff009EF7),
-                                              ),
-                                              Padding(
-                                                  padding: EdgeInsets.all(5)),
-                                              const Text('New Tasks',
-                                                  style: TextStyle(
-                                                      color: Color(0xff009EF7),
-                                                      letterSpacing: .5,
-                                                      fontWeight:
-                                                          FontWeight.bold))
-                                            ],
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(5),
+                                        child: Card(
+                                          color: Color(0xffE8FFF3),
+                                          elevation: 0.0,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10)),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Icon(
+                                                  Icons.check_circle,
+                                                  size: 40,
+                                                  color: Color(0xff50CD89),
+                                                ),
+                                                Padding(
+                                                    padding: EdgeInsets.all(5)),
+                                                const Text('Completed Tasks',
+                                                    style: TextStyle(
+                                                        color:
+                                                            Color(0xff50CD89),
+                                                        letterSpacing: .5,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    )),
+                                    )
                                   ],
-                                )),
+                                ),
                               ),
-                              Container(
-                                  child: Expanded(
-                                      child: Row(children: [
-                                Expanded(
-                                    child: Padding(
-                                  padding: const EdgeInsets.all(5),
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        Navigator.pushNamed(context, '/tasks'),
-                                    child: Card(
-                                      color: Color(0xffFFF5F8),
-                                      elevation: 0.0,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10)),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Icon(
-                                              Icons.task,
-                                              size: 40,
-                                              color: Color(0xffF1416C),
-                                            ),
-                                            Padding(padding: EdgeInsets.all(5)),
-                                            const Text('View Tasks',
-                                                style: TextStyle(
-                                                    color: Color(0xffF1416C),
-                                                    letterSpacing: .5,
-                                                    fontWeight:
-                                                        FontWeight.bold))
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                )),
-                                Expanded(
-                                    child: Padding(
-                                        padding: const EdgeInsets.all(5),
-                                        child: Card(
-                                            color: Color(0xffE8FFF3),
-                                            elevation: 0.0,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10)),
-                                            child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(10),
-                                                child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      const Icon(
-                                                        Icons.check_circle,
-                                                        size: 40,
-                                                        color:
-                                                            Color(0xff50CD89),
-                                                      ),
-                                                      Padding(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  5)),
-                                                      const Text(
-                                                          'Completed Tasks',
-                                                          style: TextStyle(
-                                                              color: Color(
-                                                                  0xff50CD89),
-                                                              letterSpacing: .5,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold)),
-                                                    ])))))
-                              ])))
-                            ])))
-                  ]))),
-        ])));
+                            )
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   _toDoColorsStart(int index) {
@@ -415,6 +513,7 @@ class _HomePageState extends State<HomePage> {
         btnOk: ElevatedButton(
           onPressed: () {
             setState(() {
+              deleteTask(tasks[index].taskId!);
               tasks.removeAt(index);
               Navigator.pop(context);
             });

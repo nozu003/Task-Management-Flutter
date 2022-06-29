@@ -7,7 +7,7 @@ import 'package:task_management_v2/screens/home_screen.dart';
 
 import 'dart:io';
 
-//method to override certificate error
+//method to override certificate error| delete before production
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -18,7 +18,7 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 void main() {
-  //calls the method above
+  //calls the method above| delete before production
   HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
 }
@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const HomePage(),
         '/create': (context) => AddTask(),
-        '/tasks': (context) => AllTasks(),
+        // '/tasks': (context) => AllTasks(),
       },
       initialRoute: '/',
     );

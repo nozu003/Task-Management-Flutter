@@ -5,10 +5,12 @@ class ITask {
   String taskName = '';
   String taskDescription = '';
   String? dateCreated = '';
-  String? status = '';
+  String? dateModified = '';
+  String? dateCompleted = '';
+  TaskStatus status = TaskStatus.New;
   List<ITag>? tags = [];
 
-  ITask(this.taskName, this.taskDescription, this.tags);
+  ITask(this.taskName, this.taskDescription, this.tags, this.status);
 
   ITask.fromJson(Map<String, dynamic> taskMap) {
     taskId = taskMap['taskId'];
@@ -16,18 +18,28 @@ class ITask {
     taskDescription = taskMap['taskDescription'];
     dateCreated = taskMap['dateCreated'];
     dateCreated = DateFormat.yMMMMd().format(DateTime.parse(dateCreated!));
+    dateModified = taskMap['dateModified'];
+    dateModified = DateFormat.yMMMMd().format(DateTime.parse(dateModified!));
+    if (taskMap['dateCompleted'] != null) {
+      dateCompleted = taskMap['dateCompleted'];
+      dateCompleted =
+          DateFormat.yMMMMd().format(DateTime.parse(dateCompleted!));
+    }
     switch (taskMap['status']) {
       case 0:
-        status = 'New';
+        status = TaskStatus.New;
         break;
       case 1:
-        status = 'In Progress';
+        status = TaskStatus.InProgress;
         break;
       case 2:
-        status = 'Completed';
+        status = TaskStatus.Completed;
         break;
       default:
         break;
+    }
+    for (Map<String, dynamic> tag in taskMap['tags']) {
+      tags!.add(ITag.fromJson(tag));
     }
   }
 
@@ -36,6 +48,20 @@ class ITask {
     data['taskName'] = taskName;
     data['taskDescription'] = taskDescription;
     data['tags'] = tags;
+    switch (status) {
+      case TaskStatus.New:
+        data['status'] = 0;
+        break;
+      case TaskStatus.InProgress:
+        data['status'] = 1;
+        break;
+      case TaskStatus.Completed:
+        data['status'] = 2;
+        break;
+      default:
+        break;
+    }
+
     return data;
   }
 }
@@ -49,7 +75,17 @@ class ITag {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    // data['tagId'] = tagId;
     data['tagName'] = tagName;
+    // data['taskId'] = taskId;
     return data;
   }
+
+  ITag.fromJson(Map<String, dynamic> taskMap) {
+    tagId = taskMap['tagId'];
+    tagName = taskMap['tagName'];
+    taskId = taskMap['taskId'];
+  }
 }
+
+enum TaskStatus { New, InProgress, Completed }

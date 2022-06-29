@@ -26,13 +26,17 @@ class HttpHelper {
     return tasks;
   }
 
-  Future<http.Response> postTask(ITask task) async {
-    Map<String, dynamic> newTask = {
-      'taskName': task.taskName,
-      'taskDescription': task.taskDescription,
-      'tags': task.tags
-    };
+  Future<ITask> getTaskById(String taskId) async {
+    String encodedPath = '$unencodedPath/$taskId';
+    Uri uri = Uri.https(authority, encodedPath);
+    http.Response result = await http.get(uri);
 
+    final data = json.decode(result.body);
+    var task = ITask.fromJson(data);
+    return task;
+  }
+
+  Future<http.Response> postTask(ITask task) async {
     Uri uri = Uri.https(authority, unencodedPath);
     http.Response result = await http.post(uri,
         body: jsonEncode(task.toJson()),
@@ -40,8 +44,40 @@ class HttpHelper {
     return result;
   }
 
+  Future<http.Response> updateTask(String taskId, ITask task) async {
+    //put to model
+    int convertedStatus = 0;
+    switch (task.status) {
+      case TaskStatus.New:
+        convertedStatus = 0;
+        break;
+      case TaskStatus.InProgress:
+        convertedStatus = 1;
+        break;
+      case TaskStatus.Completed:
+        convertedStatus = 2;
+        break;
+      default:
+    }
+    //put to model
+    Map<String, dynamic> updatedTask = {
+      'taskId': taskId,
+      'taskName': task.taskName,
+      'taskDescription': task.taskDescription,
+      'tags': task.tags,
+      'status': convertedStatus
+    };
+
+    String encodedPath = '$unencodedPath/$taskId';
+    Uri uri = Uri.https(authority, encodedPath);
+    http.Response result = await http.put(uri,
+        body: jsonEncode(updatedTask),
+        headers: {HttpHeaders.contentTypeHeader: 'application/json'});
+    return result;
+  }
+
   Future<http.Response> deleteTask(String taskId) async {
-    String encodedPath = '${this.unencodedPath}/${taskId}';
+    String encodedPath = '$unencodedPath/$taskId';
     Uri uri = Uri.https(authority, encodedPath);
     http.Response result = await http.delete(uri);
     return result;
