@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:task_management_v2/data/db/tasks_database.dart';
-import 'package:task_management_v2/data/task.dart';
-import 'package:task_management_v2/screens/home_screen.dart';
+import 'package:task_management_v2/data/tasks_database.dart';
+import 'package:task_management_v2/models/task.dart';
+import 'package:task_management_v2/services/task_service.dart';
+import 'package:task_management_v2/views/home_screen.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
-import 'dart:convert';
-import '../data/http_helper.dart';
+import 'package:http/http.dart' as http;
 
 class AddTask extends StatefulWidget {
   const AddTask({Key? key}) : super(key: key);
@@ -14,14 +14,14 @@ class AddTask extends StatefulWidget {
 }
 
 class _AddTaskState extends State<AddTask> {
-  final _formKey = GlobalKey<FormState>();
   final _taskNameController = TextEditingController();
   final _taskDescriptionController = TextEditingController();
   final _tagController = TextEditingController();
   bool _taskNameHasError = false;
   bool _taskDescriptionHasError = false;
   final FocusNode _tagFocus = FocusNode();
-  List<ITag> tagsList = [];
+  List<ITag> tags = [];
+  final TaskService _taskService = TaskService();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,7 +111,7 @@ class _AddTaskState extends State<AddTask> {
             child: Text('Tags (Optional)',
                 style: TextStyle(fontWeight: FontWeight.w700)),
           ),
-          // start of tagsList
+          // start of tags
           Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
               child: TextFormField(
@@ -122,7 +122,7 @@ class _AddTaskState extends State<AddTask> {
                       setState(() {
                         ITag tag = new ITag('');
                         tag.tagName = _tagController.text.trim();
-                        tagsList.add(tag);
+                        tags.add(tag);
                         _tagController.clear();
                         _tagFocus.unfocus();
                         FocusScope.of(context).requestFocus(_tagFocus);
@@ -135,26 +135,26 @@ class _AddTaskState extends State<AddTask> {
                     border: OutlineInputBorder(),
                     enabledBorder: InputBorder.none,
                   ))),
-          //end of tagsList
+          //end of tags
 
-          // start of chips for tagsList
+          // start of chips for tags
           Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
               child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(children: [
-                    for (var i = 0; i < tagsList.length; i++)
+                    for (var i = 0; i < tags.length; i++)
                       Padding(
                           padding: const EdgeInsets.only(left: 5),
                           child: InputChip(
-                              label: Text(tagsList[i].tagName),
+                              label: Text(tags[i].tagName),
                               onDeleted: () {
                                 setState(() {
-                                  tagsList.removeAt(i);
+                                  tags.removeAt(i);
                                 });
                               }))
                   ]))),
-          // end of chips for tagsList
+          // end of chips for tags
           Divider(
             indent: 16,
             endIndent: 16,
@@ -180,54 +180,52 @@ class _AddTaskState extends State<AddTask> {
   }
 
   Future postTask() async {
-    String taskName = _taskNameController.text.trim();
-    String taskDescription = _taskDescriptionController.text.trim();
-    List<ITag> tags = tagsList;
-    ITask newTask = ITask(taskName, taskDescription, tags, TaskStatus.New);
+    ITask newTask = ITask(
+        taskName: _taskNameController.text.trim(),
+        taskDescription: _taskDescriptionController.text.trim(),
+        tags: tags,
+        status: TaskStatus.New);
 
     // start of http
-    // HttpHelper helper = HttpHelper();
-    // var result = await helper.postTask(newTask);
-    // if (result.statusCode == 201) {
-    //   setState(() {
-    //     _taskNameController.clear();
-    //     _taskDescriptionController.clear();
-    //     _tagController.clear();
-    //     tagsList.clear();
-    //     Navigator.push(
-    //         context, MaterialPageRoute(builder: (context) => HomePage()));
+    http.Response result = await _taskService.postTask(newTask);
+    if (result.statusCode == 201) {
+      setState(() {
+        Navigator.pop(context);
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => HomePage()));
 
-    //     showTopSnackBar(
-    //         context,
-    //         TopSnackBar(
-    //             child: Card(
-    //               child: ListTile(
-    //                 title: Text('Task added successfully'),
-    //                 leading: Icon(
-    //                   Icons.check_circle,
-    //                   color: Color(0xff50CD89),
-    //                 ),
-    //               ),
-    //             ),
-    //             onDismissed: () {},
-    //             animationDuration: Duration(milliseconds: 550),
-    //             reverseAnimationDuration: Duration(milliseconds: 550),
-    //             displayDuration: Duration(milliseconds: 1250),
-    //             padding: EdgeInsets.all(16),
-    //             curve: Curves.elasticOut,
-    //             reverseCurve: Curves.linearToEaseOut));
-    //   });
-    // }
+        showTopSnackBar(
+            context,
+            TopSnackBar(
+                child: Card(
+                  child: ListTile(
+                    title: Text('Task added successfully'),
+                    leading: Icon(
+                      Icons.check_circle,
+                      color: Color(0xff50CD89),
+                    ),
+                  ),
+                ),
+                onDismissed: () {},
+                animationDuration: Duration(milliseconds: 550),
+                reverseAnimationDuration: Duration(milliseconds: 550),
+                displayDuration: Duration(milliseconds: 1250),
+                padding: EdgeInsets.all(16),
+                curve: Curves.elasticOut,
+                reverseCurve: Curves.linearToEaseOut));
+      });
+    }
     // end of http
 
-    final task = Task(
-        taskName: taskName,
-        taskDescription: taskDescription,
-        status: 0,
-        dateCreated: DateTime.now(),
-        dateModified: DateTime.now());
+    //Local storage
+    // final task = Task(
+    //     taskName: taskName,
+    //     taskDescription: taskDescription,
+    //     status: 0,
+    //     dateCreated: DateTime.now(),
+    //     dateModified: DateTime.now());
 
-    await TasksDatabase.instance.create(task);
-    TasksDatabase.instance.close();
+    // await TasksDatabase.instance.create(task);
+    // TasksDatabase.instance.close();
   }
 }

@@ -1,16 +1,16 @@
 import 'dart:convert';
-
+import 'package:http/http.dart' as http;
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:task_management_v2/data/db/tasks_database.dart';
-import 'package:task_management_v2/data/http_helper.dart';
+import 'package:task_management_v2/data/tasks_database.dart';
+import 'package:task_management_v2/repository/api/task_repository.dart';
+import 'package:task_management_v2/services/task_service.dart';
 
-import '../data/task.dart';
+import '../models/task.dart';
 
 class ViewTask extends StatefulWidget {
-  final int taskId;
-  // final String taskId;
+  final String taskId;
   const ViewTask({required this.taskId, Key? key}) : super(key: key);
 
   @override
@@ -18,38 +18,31 @@ class ViewTask extends StatefulWidget {
 }
 
 class _ViewTaskState extends State<ViewTask> {
-  late int _taskId = 0;
-  // late String _taskId = '';
-  late TextEditingController _taskNameController = TextEditingController();
-  late TextEditingController _taskDescriptionController =
+  final TaskService _taskService = TaskService();
+  late final TextEditingController _taskNameController =
       TextEditingController();
-  late TextEditingController _dateCreatedController = TextEditingController();
-  late TextEditingController _dateModifiedController = TextEditingController();
-  late TextEditingController _dateCompletedController = TextEditingController();
-  late TaskStatus _status = TaskStatus.New;
+  late final TextEditingController _taskDescriptionController =
+      TextEditingController();
   late List<ITag> tags = [];
+  late ITask task = ITask(
+      taskName: 'taskName',
+      taskDescription: 'taskDescription',
+      status: TaskStatus.New);
 
   Future getTaskById() async {
-    HttpHelper httpHelper = HttpHelper();
-    // var result = await httpHelper.getTaskById(widget.taskId);
-    var result = await TasksDatabase.instance.getTaskById(widget.taskId);
-    // _taskId = result.taskId!;
-    // _taskNameController.text = result.taskName;
-    // _taskDescriptionController.text = result.taskDescription;
-    // _dateCreatedController.text = result.dateCreated!;
-    // _dateModifiedController.text = result.dateModified!;
-    // _dateCompletedController.text = result.dateCompleted!;
-    // _status = result.status;
-    // setState(() {
-    //   tags.addAll(result.tags!);
-    // });
-    _taskId = result.taskId!;
-    _taskNameController.text = result.taskName;
-    _taskDescriptionController.text = result.taskDescription;
-    _dateCreatedController.text = result.dateCreated.toString();
-    _dateModifiedController.text = result.dateModified.toString();
-    _dateCompletedController.text = result.dateCompleted.toString();
-    // _status = result.status;
+    var result = await _taskService.getTaskById(widget.taskId);
+    // var result = await TasksDatabase.instance.getTaskById(widget.taskId);
+    task = ITask(
+        taskId: result.taskId,
+        taskName: result.taskName,
+        taskDescription: result.taskDescription,
+        dateCreated: result.dateCreatead,
+        dateModified: result.dateModified,
+        dateCompleted: result.dateCompleted,
+        status: result.status);
+    setState(() {
+      tags.addAll(result.tags!);
+    });
   }
 
   @override
@@ -70,6 +63,7 @@ class _ViewTaskState extends State<ViewTask> {
             TextFormField(
               onChanged: (value) => {updateTask()},
               controller: _taskNameController,
+              initialValue: task.taskName,
               decoration: InputDecoration(border: InputBorder.none),
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
             ),
@@ -101,11 +95,10 @@ class _ViewTaskState extends State<ViewTask> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Tooltip(
-                    message: 'Created at ${_dateCreatedController.text}',
-                    child: _dateCompletedController.text.isEmpty
-                        ? Text('Edited ${_dateModifiedController.text}')
-                        : Text(
-                            'Completed at ${_dateCompletedController.text}')),
+                    message: 'Created at ${task.dateCreated}',
+                    child: task.dateCompleted!.isEmpty
+                        ? Text('Edited ${task.dateModified}')
+                        : Text('Completed at ${task.dateCompleted}')),
                 Spacer(),
                 IconButton(
                     onPressed: () {
@@ -147,20 +140,15 @@ class _ViewTaskState extends State<ViewTask> {
   Future updateTask() async {
     String taskName = _taskNameController.text.trim();
     String taskDescription = _taskDescriptionController.text.trim();
-    String dateCreated = _dateCreatedController.text.trim();
-    String dateModified = _dateModifiedController.text.trim();
 
-    ITask up = ITask(taskName, taskDescription, tags, _status);
-    Task task = Task(
+    task = ITask(
+        taskId: task.taskId,
         taskName: taskName,
         taskDescription: taskDescription,
-        dateCreated: DateTime.parse(dateCreated),
-        dateModified: DateTime.now(),
-        status: 0);
+        status: task.status);
 
-    HttpHelper helper = HttpHelper();
-    // var result = await helper.updateTask(widget.taskId, up);
-    // print(result.statusCode);
-    var result = await TasksDatabase.instance.updateTask(task);
+    http.Response result = await _taskService.updateTask(task);
+    print(result.statusCode);
+    // var result = await TasksDatabase.instance.updateTask(task);
   }
 }

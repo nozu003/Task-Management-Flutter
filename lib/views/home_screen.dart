@@ -1,13 +1,18 @@
+import 'dart:convert';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:http/http.dart' as http;
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
-import 'package:task_management_v2/data/db/tasks_database.dart';
-import 'package:task_management_v2/data/task.dart';
-import 'package:task_management_v2/screens/all_tasks_screen.dart';
-import 'package:task_management_v2/screens/view_task_screen.dart';
+import 'package:task_management_v2/data/tasks_database.dart';
+import 'package:task_management_v2/models/task.dart';
+import 'package:task_management_v2/services/task_service.dart';
+import 'package:task_management_v2/views/add_task_screen.dart';
+import 'package:task_management_v2/views/all_tasks_screen.dart';
+import 'package:task_management_v2/views/view_task_screen.dart';
 import 'package:task_management_v2/shared/menu_bottom.dart';
 
-import '../data/http_helper.dart';
+import '../repository/api/task_repository.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -17,26 +22,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // late List<ITask> tasks = [];
-  late List<Task> tasks = [];
+  late List<ITask> tasks = [];
+  final TaskService _taskService = TaskService();
 
   callback() {
     getTasks();
   }
 
   Future getTasks() async {
-    // HttpHelper helper = HttpHelper();
-    // var result = await helper.getTasks();
-    // setState(() {
-    //   tasks.clear();
-    //   tasks.addAll(result);
-    // });
-
-    var result = await TasksDatabase.instance.getTasks();
+    var result = await _taskService.getTasks();
+    print(jsonEncode(result));
     setState(() {
       tasks.clear();
-      tasks = result;
+      tasks.addAll(result);
     });
+
+    // var result = await TasksDatabase.instance.getTasks();
+    // setState(() {
+    //   tasks.clear();
+    //   tasks = result;
+    // });
   }
 
   @override
@@ -63,7 +68,8 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         elevation: 0,
         onPressed: () {
-          Navigator.pushNamed(context, '/create');
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => AddTask()));
         },
         child: Icon(Icons.add),
       ),
@@ -382,13 +388,16 @@ class _HomePageState extends State<HomePage> {
                                         child: Padding(
                                       padding: const EdgeInsets.all(5),
                                       child: GestureDetector(
-                                        // onTap: () =>
-                                        // Navigator.push(
-                                        //     context,
-                                        //     MaterialPageRoute(
-                                        //         builder: (context) => AllTasks(
-                                        //             tasks: tasks,
-                                        //             callbackFn: callback))),
+                                        onTap: () => {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      AllTasks(
+                                                          tasks: tasks,
+                                                          callbackFn:
+                                                              callback)))
+                                        },
                                         child: Card(
                                           color: Color(0xffFFF5F8),
                                           elevation: 0.0,
@@ -514,8 +523,8 @@ class _HomePageState extends State<HomePage> {
         btnOk: ElevatedButton(
           onPressed: () {
             setState(() {
-              // deleteTask(tasks[index].taskId!);
-              TasksDatabase.instance.deleteTask(tasks[index].taskId!);
+              deleteTask(tasks[index].taskId!);
+              // TasksDatabase.instance.deleteTask(tasks[index].taskId!);
               tasks.removeAt(index);
               Navigator.pop(context);
             });
@@ -533,8 +542,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future deleteTask(String taskId) async {
-    HttpHelper helper = HttpHelper();
-    var result = await helper.deleteTask(taskId);
+    http.Response result = await _taskService.deleteTask(taskId);
     if (result.statusCode == 201) {
       setState(() {
         // serverResponse = result.statusCode;

@@ -1,19 +1,19 @@
 import 'dart:convert';
-
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:badges/badges.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:task_management_v2/screens/home_screen.dart';
-import 'package:task_management_v2/screens/view_task_screen.dart';
+import 'package:task_management_v2/services/task_service.dart';
+import 'package:task_management_v2/views/home_screen.dart';
+import 'package:task_management_v2/views/view_task_screen.dart';
 import 'package:task_management_v2/shared/menu_bottom.dart';
 
-import '../data/http_helper.dart';
-import '../data/task.dart';
+import '../repository/api/task_repository.dart';
+import '../models/task.dart';
 
 class AllTasks extends StatefulWidget {
   final List<ITask> tasks;
-  // final List<ITask> tasks;
   final Function callbackFn;
   const AllTasks({required this.tasks, Key? key, required this.callbackFn})
       : super(key: key);
@@ -23,6 +23,7 @@ class AllTasks extends StatefulWidget {
 }
 
 class _AllTasksState extends State<AllTasks> {
+  final TaskService _taskService = TaskService();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -190,8 +191,7 @@ class _AllTasksState extends State<AllTasks> {
   void doNothing(BuildContext context) {}
 
   Future deleteTask(String taskId) async {
-    HttpHelper helper = HttpHelper();
-    var result = await helper.deleteTask(taskId);
+    http.Response result = await _taskService.deleteTask(taskId);
     if (result.statusCode == 201) {
       setState(() {
         // serverResponse = result.statusCode;
@@ -200,22 +200,30 @@ class _AllTasksState extends State<AllTasks> {
   }
 
   Future updateTask(ITask task) async {
-    ITask up = ITask(
-        task.taskName, task.taskDescription, task.tags, TaskStatus.InProgress);
-
+    TaskStatus status = TaskStatus.New;
+    print(jsonEncode(task));
     switch (task.status) {
       case TaskStatus.New:
+        status = TaskStatus.InProgress;
         break;
       case TaskStatus.InProgress:
-        up = ITask(task.taskName, task.taskDescription, task.tags,
-            TaskStatus.Completed);
+        status = TaskStatus.Completed;
         break;
       case TaskStatus.Completed:
         break;
     }
 
-    HttpHelper helper = HttpHelper();
-    var result = await helper.updateTask(task.taskId!, up);
+    ITask updatedTask = ITask(
+        taskId: task.taskId,
+        taskName: task.taskName,
+        taskDescription: task.taskDescription,
+        tags: task.tags,
+        status: status);
+
+    print(updatedTask.status);
+
+    http.Response result = await _taskService.updateTask(updatedTask);
+    print(result.statusCode);
     if (result.statusCode == 200) {
       setState(() {
         widget.callbackFn();

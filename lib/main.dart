@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:task_management_v2/screens/add_task_screen.dart';
-import 'package:task_management_v2/screens/all_tasks_screen.dart';
-import 'package:task_management_v2/screens/home_screen.dart';
+import 'package:task_management_v2/views/add_task_screen.dart';
+import 'package:task_management_v2/views/all_tasks_screen.dart';
+import 'package:task_management_v2/views/home_screen.dart';
 
 import 'dart:io';
 
@@ -48,12 +48,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      routes: {
-        '/': (context) => const HomePage(),
-        '/create': (context) => AddTask(),
-        // '/tasks': (context) => AllTasks(),
-      },
-      initialRoute: '/',
+      home: HomePage(),
     );
   }
 }
