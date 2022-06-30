@@ -13,6 +13,7 @@ import '../data/task.dart';
 
 class AllTasks extends StatefulWidget {
   final List<ITask> tasks;
+  // final List<ITask> tasks;
   final Function callbackFn;
   const AllTasks({required this.tasks, Key? key, required this.callbackFn})
       : super(key: key);
@@ -93,12 +94,12 @@ class _AllTasksState extends State<AllTasks> {
                     // The child of the Slidable is what the user sees when the
                     // component is not dragged.
                     child: GestureDetector(
-                      onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ViewTask(
-                                    taskId: widget.tasks[index].taskId!,
-                                  ))),
+                      // onTap: () => Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //         builder: (context) => ViewTask(
+                      //               taskId: widget.tasks[index].taskId!,
+                      //             ))),
                       child: Card(
                         elevation: 0,
                         child: ListTile(
@@ -116,7 +117,7 @@ class _AllTasksState extends State<AllTasks> {
                             ),
                             trailing: Badge(
                                 elevation: 0,
-                                toAnimate: false,
+                                toAnimate: true,
                                 shape: BadgeShape.square,
                                 badgeColor: _badgeColor(_statusConverter(
                                     widget.tasks[index].status)),

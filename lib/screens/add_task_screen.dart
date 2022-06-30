@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:task_management_v2/data/db/tasks_database.dart';
 import 'package:task_management_v2/data/task.dart';
 import 'package:task_management_v2/screens/home_screen.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
@@ -184,37 +185,49 @@ class _AddTaskState extends State<AddTask> {
     List<ITag> tags = tagsList;
     ITask newTask = ITask(taskName, taskDescription, tags, TaskStatus.New);
 
-    HttpHelper helper = HttpHelper();
-    var result = await helper.postTask(newTask);
-    if (result.statusCode == 201) {
-      setState(() {
-        _taskNameController.clear();
-        _taskDescriptionController.clear();
-        _tagController.clear();
-        tagsList.clear();
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => HomePage()));
+    // start of http
+    // HttpHelper helper = HttpHelper();
+    // var result = await helper.postTask(newTask);
+    // if (result.statusCode == 201) {
+    //   setState(() {
+    //     _taskNameController.clear();
+    //     _taskDescriptionController.clear();
+    //     _tagController.clear();
+    //     tagsList.clear();
+    //     Navigator.push(
+    //         context, MaterialPageRoute(builder: (context) => HomePage()));
 
-        showTopSnackBar(
-            context,
-            TopSnackBar(
-                child: Card(
-                  child: ListTile(
-                    title: Text('Task added successfully'),
-                    leading: Icon(
-                      Icons.check_circle,
-                      color: Color(0xff50CD89),
-                    ),
-                  ),
-                ),
-                onDismissed: () {},
-                animationDuration: Duration(milliseconds: 550),
-                reverseAnimationDuration: Duration(milliseconds: 550),
-                displayDuration: Duration(milliseconds: 1250),
-                padding: EdgeInsets.all(16),
-                curve: Curves.elasticOut,
-                reverseCurve: Curves.linearToEaseOut));
-      });
-    }
+    //     showTopSnackBar(
+    //         context,
+    //         TopSnackBar(
+    //             child: Card(
+    //               child: ListTile(
+    //                 title: Text('Task added successfully'),
+    //                 leading: Icon(
+    //                   Icons.check_circle,
+    //                   color: Color(0xff50CD89),
+    //                 ),
+    //               ),
+    //             ),
+    //             onDismissed: () {},
+    //             animationDuration: Duration(milliseconds: 550),
+    //             reverseAnimationDuration: Duration(milliseconds: 550),
+    //             displayDuration: Duration(milliseconds: 1250),
+    //             padding: EdgeInsets.all(16),
+    //             curve: Curves.elasticOut,
+    //             reverseCurve: Curves.linearToEaseOut));
+    //   });
+    // }
+    // end of http
+
+    final task = Task(
+        taskName: taskName,
+        taskDescription: taskDescription,
+        status: 0,
+        dateCreated: DateTime.now(),
+        dateModified: DateTime.now());
+
+    await TasksDatabase.instance.create(task);
+    TasksDatabase.instance.close();
   }
 }

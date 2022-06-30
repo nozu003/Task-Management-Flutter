@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:faker/faker.dart';
 
 class ITask {
   String? taskId = '';
@@ -89,3 +90,91 @@ class ITag {
 }
 
 enum TaskStatus { New, InProgress, Completed }
+
+//Database
+final String tableTasks = 'tasks';
+final String tableTags = 'tags';
+
+class Task {
+  // String? taskId = faker.guid.guid();
+  int? taskId;
+  String taskName;
+  String taskDescription;
+  DateTime dateCreated = DateTime.now();
+  DateTime dateModified = DateTime.now();
+  DateTime? dateCompleted;
+  int status = 0;
+
+  Task(
+      {this.taskId,
+      required this.taskName,
+      required this.taskDescription,
+      required this.dateCreated,
+      required this.dateModified,
+      this.dateCompleted,
+      required this.status});
+
+  Task copy({
+    int? taskId,
+    String? taskName,
+    String? taskDescription,
+    DateTime? dateCreated,
+    DateTime? dateModified,
+    DateTime? dateCompleted,
+    int? status,
+  }) =>
+      Task(
+          taskId: taskId ?? this.taskId,
+          taskName: taskName ?? this.taskName,
+          taskDescription: taskDescription ?? this.taskDescription,
+          dateCreated: dateCreated ?? this.dateCreated,
+          dateModified: dateModified ?? this.dateModified,
+          dateCompleted: dateCompleted ?? this.dateCompleted,
+          status: status ?? this.status);
+
+  static Task fromJson(Map<String, Object?> json) => Task(
+      taskId: json[TaskFields.taskId] as int?,
+      taskName: json[TaskFields.taskName] as String,
+      taskDescription: json[TaskFields.taskDescription] as String,
+      dateCreated: DateTime.parse(json[TaskFields.dateCreated] as String),
+      dateModified: DateTime.parse(json[TaskFields.dateModified] as String),
+      status: json[TaskFields.status] as int);
+
+  Map<String, Object?> toJson() => {
+        TaskFields.taskId: taskId,
+        TaskFields.taskName: taskName,
+        TaskFields.taskDescription: taskDescription,
+        TaskFields.dateCreated: dateCreated.toIso8601String(),
+        TaskFields.dateModified: dateModified.toIso8601String(),
+        // TaskFields.dateCompleted: dateCompleted!.toIso8601String(),
+        TaskFields.status: status
+      };
+}
+
+class TaskFields {
+  static final List<String> values = [
+    taskId,
+    taskName,
+    taskDescription,
+    dateCreated,
+    dateModified,
+    dateCompleted,
+    status
+  ];
+
+  // static final String taskId = faker.guid.guid();
+  static final String taskId = '_taskId';
+  static final String taskName = 'taskName';
+  static final String taskDescription = 'taskDescription';
+  static final String dateCreated = 'dateCreated';
+  static final String dateModified = 'dateModified';
+  static final String dateCompleted = 'dateCompleted';
+  static final String status = 'status';
+}
+
+class TagFields {
+  // static final String tagId = faker.guid.guid();
+  static final String tagId = '_tagId';
+  static final String tagName = 'tagName';
+  static final String taskId = TaskFields.taskId;
+}
