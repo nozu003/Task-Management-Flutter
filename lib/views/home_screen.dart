@@ -32,10 +32,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future getTasks() async {
-    var result = await _taskServiceLocal.getTasks();
+    var result = await _taskServiceAPI.getTasks();
     setState(() {
       tasks.clear();
       tasks.addAll(result);
+      print(jsonEncode(tasks[0].tags));
     });
 
     // var result = await TasksDatabase.instance.getTasks();

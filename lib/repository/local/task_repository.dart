@@ -46,9 +46,10 @@ class TaskRepositoryLocal {
 
     batch.update(TaskTable.tableName, task.toJson(),
         where: '${TaskTable.taskId} = ?', whereArgs: [task.taskId]);
-    if (task.tags != null) {
+    if (task.tags != null || task.tags != []) {
       for (var tag in task.tags!) {
-        batch.update(TagTable.tableName, tag.toMap());
+        batch.update(TagTable.tableName, tag.toJson(),
+            where: '${TagTable.tagId} = ?', whereArgs: [tag.tagId]);
       }
     }
     await batch.commit(noResult: true);

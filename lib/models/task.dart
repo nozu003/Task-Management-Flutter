@@ -47,23 +47,19 @@ class ITask {
       default:
         break;
     }
-    if (taskMap['tags'] != null) {
-      for (Map<String, dynamic> tag in taskMap['tags']) {
-        tags!.add(ITag.fromJson(tag));
-      }
+    for (Map<String, dynamic> tag in taskMap['tags']) {
+      tags!.add(ITag.fromJson(tag));
     }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    if (data['taskId'] != null) {
+    if (taskId != null) {
       data['taskId'] = taskId;
     }
     data['taskName'] = taskName;
     data['taskDescription'] = taskDescription;
-    if (data['tags'] != null) {
-      data['tags'] = tags;
-    }
+    data['tags'] = tags;
     switch (status) {
       case TaskStatus.New:
         data['status'] = 0;
@@ -77,17 +73,15 @@ class ITask {
       default:
         break;
     }
-
-    if (data['dateCreated'] != null) {
+    if (dateCreated != null) {
       data['dateCreated'] = dateCreated;
     }
-    if (data['dateModified'] != null) {
+    if (dateModified != null) {
       data['dateModified'] = dateModified;
     }
-    if (data['dateCompleted'] != null) {
+    if (dateCompleted != null) {
       data['dateCompleted'] = dateCompleted;
     }
-
     return data;
   }
 
@@ -128,11 +122,11 @@ class ITag {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    if (data['tagId'] != null) {
+    if (tagId!.isNotEmpty) {
       data['tagId'] = tagId;
     }
     data['tagName'] = tagName;
-    if (data['taskId'] != null) {
+    if (taskId!.isNotEmpty) {
       data['taskId'] = taskId;
     }
     return data;

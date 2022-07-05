@@ -31,7 +31,7 @@ class _ViewTaskState extends State<ViewTask> {
       status: TaskStatus.New);
 
   Future getTaskById() async {
-    var result = await _taskServiceLocal.getTaskById(widget.taskId);
+    var result = await _taskServiceAPI.getTaskById(widget.taskId);
     // var result = await TasksDatabase.instance.getTaskById(widget.taskId);
     task = ITask(
         taskId: result.taskId,
@@ -39,7 +39,7 @@ class _ViewTaskState extends State<ViewTask> {
         taskDescription: result.taskDescription,
         dateCreated: result.dateCreated,
         dateModified: result.dateModified,
-        dateCompleted: result.dateCompleted,
+        dateCompleted: result.dateCompleted!,
         status: result.status);
     _taskNameController.text = task.taskName;
     _taskDescriptionController.text = task.taskDescription;

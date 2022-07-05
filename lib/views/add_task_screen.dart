@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:task_management_v2/data/database_helper.dart';
 import 'package:task_management_v2/models/task.dart';
@@ -189,9 +191,13 @@ class _AddTaskState extends State<AddTask> {
         status: TaskStatus.New);
 
     // start of http
-    http.Response result = await _taskServiceLocal.postTask(newTask);
+    http.Response result = await _taskService.postTask(newTask);
+    print(jsonEncode(newTask));
+    print(result.statusCode);
     if (result.statusCode == 201) {
       setState(() {
+        //add to local db
+        _taskServiceLocal.postTask(newTask);
         Navigator.pop(context);
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => HomePage()));

@@ -36,6 +36,7 @@ class _AllTasksState extends State<AllTasks> {
         body: ListView.builder(
           itemCount: widget.tasks.length,
           itemBuilder: (BuildContext context, int index) {
+            ITask task = widget.tasks[index];
             return Padding(
                 padding: const EdgeInsets.only(left: 5, right: 5),
                 child: Slidable(
@@ -50,7 +51,7 @@ class _AllTasksState extends State<AllTasks> {
                       // A pane can dismiss the Slidable.
                       dismissible: DismissiblePane(onDismissed: () {
                         setState(() {
-                          deleteTask(widget.tasks[index].taskId!);
+                          deleteTask(task.taskId!);
                           widget.tasks.removeAt(index);
                         });
                       }),
@@ -101,7 +102,7 @@ class _AllTasksState extends State<AllTasks> {
                           context,
                           MaterialPageRoute(
                               builder: (context) => ViewTask(
-                                    taskId: widget.tasks[index].taskId!,
+                                    taskId: task.taskId!,
                                   ))),
                       child: Card(
                         elevation: 0,
@@ -193,11 +194,9 @@ class _AllTasksState extends State<AllTasks> {
   void doNothing(BuildContext context) {}
 
   Future deleteTask(String taskId) async {
-    http.Response result = await _taskServiceLocal.deleteTask(taskId);
-    if (result.statusCode == 201) {
-      setState(() {
-        // serverResponse = result.statusCode;
-      });
+    http.Response result = await _taskServiceAPI.deleteTask(taskId);
+    if (result.statusCode == 204) {
+      _taskServiceLocal.deleteTask(taskId);
     }
   }
 
@@ -218,15 +217,18 @@ class _AllTasksState extends State<AllTasks> {
         taskId: task.taskId,
         taskName: task.taskName,
         taskDescription: task.taskDescription,
+        dateCreated: task.dateCreated,
+        dateModified: task.dateModified,
         tags: task.tags,
         status: status);
-
     http.Response result =
-        await _taskServiceLocal.updateTask(task.taskId!, updatedTask);
-    print(result.statusCode);
+        await _taskServiceAPI.updateTask(task.taskId!, updatedTask);
     if (result.statusCode == 200) {
+      _taskServiceLocal.updateTask(task.taskId!, updatedTask);
       setState(() {
-        widget.callbackFn();
+        widget.tasks[widget.tasks.indexWhere(
+            (element) => element.taskId == updatedTask.taskId)] = updatedTask;
+        // widget.callbackFn();
       });
     }
   }
