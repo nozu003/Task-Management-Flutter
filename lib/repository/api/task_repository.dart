@@ -6,7 +6,7 @@ import 'dart:convert';
 
 import 'package:task_management_v2/models/task.dart';
 
-class TaskRepository {
+class TaskRepositoryAPI {
   final String _authority = HttpConfig().authority;
   final String _unencodedPath = HttpConfig().unencodedPath;
   final Map<String, dynamic> _queryParameters = HttpConfig().queryParameters;
@@ -23,7 +23,11 @@ class TaskRepository {
     for (Map<String, dynamic> datum in data) {
       tasks.add(ITask.fromJson(datum));
     }
-    return tasks;
+    if (result.statusCode == 200) {
+      return tasks;
+    } else {
+      throw Exception('Failed to get tasks');
+    }
   }
 
   /** 

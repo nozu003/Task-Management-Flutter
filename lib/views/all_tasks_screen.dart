@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:badges/badges.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:task_management_v2/services/task_service.dart';
+import 'package:task_management_v2/services/task_service_api.dart';
 import 'package:task_management_v2/views/home_screen.dart';
 import 'package:task_management_v2/views/view_task_screen.dart';
 import 'package:task_management_v2/shared/menu_bottom.dart';
 
 import '../repository/api/task_repository.dart';
 import '../models/task.dart';
+import '../services/task_service_local.dart';
 
 class AllTasks extends StatefulWidget {
   final List<ITask> tasks;
@@ -23,7 +24,8 @@ class AllTasks extends StatefulWidget {
 }
 
 class _AllTasksState extends State<AllTasks> {
-  final TaskService _taskService = TaskService();
+  final TaskServiceAPI _taskServiceAPI = TaskServiceAPI();
+  final TaskServiceLocal _taskServiceLocal = TaskServiceLocal();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,12 +97,12 @@ class _AllTasksState extends State<AllTasks> {
                     // The child of the Slidable is what the user sees when the
                     // component is not dragged.
                     child: GestureDetector(
-                      // onTap: () => Navigator.push(
-                      //     context,
-                      //     MaterialPageRoute(
-                      //         builder: (context) => ViewTask(
-                      //               taskId: widget.tasks[index].taskId!,
-                      //             ))),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ViewTask(
+                                    taskId: widget.tasks[index].taskId!,
+                                  ))),
                       child: Card(
                         elevation: 0,
                         child: ListTile(
@@ -191,7 +193,7 @@ class _AllTasksState extends State<AllTasks> {
   void doNothing(BuildContext context) {}
 
   Future deleteTask(String taskId) async {
-    http.Response result = await _taskService.deleteTask(taskId);
+    http.Response result = await _taskServiceLocal.deleteTask(taskId);
     if (result.statusCode == 201) {
       setState(() {
         // serverResponse = result.statusCode;
@@ -201,7 +203,6 @@ class _AllTasksState extends State<AllTasks> {
 
   Future updateTask(ITask task) async {
     TaskStatus status = TaskStatus.New;
-    print(jsonEncode(task));
     switch (task.status) {
       case TaskStatus.New:
         status = TaskStatus.InProgress;
@@ -220,9 +221,8 @@ class _AllTasksState extends State<AllTasks> {
         tags: task.tags,
         status: status);
 
-    print(updatedTask.status);
-
-    http.Response result = await _taskService.updateTask(updatedTask);
+    http.Response result =
+        await _taskServiceLocal.updateTask(task.taskId!, updatedTask);
     print(result.statusCode);
     if (result.statusCode == 200) {
       setState(() {

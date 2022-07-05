@@ -3,9 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:task_management_v2/data/tasks_database.dart';
+import 'package:task_management_v2/data/database_helper.dart';
 import 'package:task_management_v2/repository/api/task_repository.dart';
-import 'package:task_management_v2/services/task_service.dart';
+import 'package:task_management_v2/services/task_service_api.dart';
+import 'package:task_management_v2/services/task_service_local.dart';
 
 import '../models/task.dart';
 
@@ -18,10 +19,10 @@ class ViewTask extends StatefulWidget {
 }
 
 class _ViewTaskState extends State<ViewTask> {
-  final TaskService _taskService = TaskService();
-  late final TextEditingController _taskNameController =
-      TextEditingController();
-  late final TextEditingController _taskDescriptionController =
+  final TaskServiceAPI _taskServiceAPI = TaskServiceAPI();
+  final TaskServiceLocal _taskServiceLocal = TaskServiceLocal();
+  final TextEditingController _taskNameController = TextEditingController();
+  final TextEditingController _taskDescriptionController =
       TextEditingController();
   late List<ITag> tags = [];
   late ITask task = ITask(
@@ -30,16 +31,18 @@ class _ViewTaskState extends State<ViewTask> {
       status: TaskStatus.New);
 
   Future getTaskById() async {
-    var result = await _taskService.getTaskById(widget.taskId);
+    var result = await _taskServiceLocal.getTaskById(widget.taskId);
     // var result = await TasksDatabase.instance.getTaskById(widget.taskId);
     task = ITask(
         taskId: result.taskId,
         taskName: result.taskName,
         taskDescription: result.taskDescription,
-        dateCreated: result.dateCreatead,
+        dateCreated: result.dateCreated,
         dateModified: result.dateModified,
         dateCompleted: result.dateCompleted,
         status: result.status);
+    _taskNameController.text = task.taskName;
+    _taskDescriptionController.text = task.taskDescription;
     setState(() {
       tags.addAll(result.tags!);
     });
@@ -63,7 +66,6 @@ class _ViewTaskState extends State<ViewTask> {
             TextFormField(
               onChanged: (value) => {updateTask()},
               controller: _taskNameController,
-              initialValue: task.taskName,
               decoration: InputDecoration(border: InputBorder.none),
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
             ),
@@ -147,7 +149,8 @@ class _ViewTaskState extends State<ViewTask> {
         taskDescription: taskDescription,
         status: task.status);
 
-    http.Response result = await _taskService.updateTask(task);
+    http.Response result =
+        await _taskServiceAPI.updateTask(widget.taskId, task);
     print(result.statusCode);
     // var result = await TasksDatabase.instance.updateTask(task);
   }

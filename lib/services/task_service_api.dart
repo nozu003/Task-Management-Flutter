@@ -2,8 +2,8 @@ import 'package:task_management_v2/repository/api/task_repository.dart';
 
 import '../models/task.dart';
 
-class TaskService {
-  final TaskRepository _taskRepository = TaskRepository();
+class TaskServiceAPI {
+  final TaskRepositoryAPI _taskRepository = TaskRepositoryAPI();
 
   getTasks() {
     return _taskRepository.getTasks();
@@ -17,8 +17,8 @@ class TaskService {
     return _taskRepository.postTask(task);
   }
 
-  updateTask(ITask task) {
-    return _taskRepository.updateTask(task.taskId!, task);
+  updateTask(String taskId, ITask task) {
+    return _taskRepository.updateTask(taskId, task);
   }
 
   deleteTask(String taskId) {

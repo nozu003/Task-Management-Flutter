@@ -4,9 +4,10 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:http/http.dart' as http;
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
-import 'package:task_management_v2/data/tasks_database.dart';
+import 'package:task_management_v2/data/database_helper.dart';
 import 'package:task_management_v2/models/task.dart';
-import 'package:task_management_v2/services/task_service.dart';
+import 'package:task_management_v2/services/task_service_api.dart';
+import 'package:task_management_v2/services/task_service_local.dart';
 import 'package:task_management_v2/views/add_task_screen.dart';
 import 'package:task_management_v2/views/all_tasks_screen.dart';
 import 'package:task_management_v2/views/view_task_screen.dart';
@@ -23,15 +24,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late List<ITask> tasks = [];
-  final TaskService _taskService = TaskService();
+  final TaskServiceAPI _taskServiceAPI = TaskServiceAPI();
+  final TaskServiceLocal _taskServiceLocal = TaskServiceLocal();
 
   callback() {
     getTasks();
   }
 
   Future getTasks() async {
-    var result = await _taskService.getTasks();
-    print(jsonEncode(result));
+    var result = await _taskServiceLocal.getTasks();
     setState(() {
       tasks.clear();
       tasks.addAll(result);
@@ -116,12 +117,16 @@ class _HomePageState extends State<HomePage> {
                                         children: [
                                           for (var i = 0; i < tasks.length; i++)
                                             GestureDetector(
-                                              onTap: () => MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      ViewTask(
-                                                        taskId:
-                                                            tasks[i].taskId!,
-                                                      )),
+                                              onTap: () => {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            ViewTask(
+                                                              taskId: tasks[i]
+                                                                  .taskId!,
+                                                            )))
+                                              },
                                               child: Container(
                                                 padding:
                                                     const EdgeInsets.all(5),
@@ -542,7 +547,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future deleteTask(String taskId) async {
-    http.Response result = await _taskService.deleteTask(taskId);
+    http.Response result = await _taskServiceAPI.deleteTask(taskId);
     if (result.statusCode == 201) {
       setState(() {
         // serverResponse = result.statusCode;

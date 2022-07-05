@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:task_management_v2/data/tasks_database.dart';
+import 'package:task_management_v2/data/database_helper.dart';
 import 'package:task_management_v2/models/task.dart';
-import 'package:task_management_v2/services/task_service.dart';
+import 'package:task_management_v2/services/task_service_api.dart';
+import 'package:task_management_v2/services/task_service_local.dart';
 import 'package:task_management_v2/views/home_screen.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 import 'package:http/http.dart' as http;
@@ -21,7 +22,8 @@ class _AddTaskState extends State<AddTask> {
   bool _taskDescriptionHasError = false;
   final FocusNode _tagFocus = FocusNode();
   List<ITag> tags = [];
-  final TaskService _taskService = TaskService();
+  final TaskServiceAPI _taskService = TaskServiceAPI();
+  final TaskServiceLocal _taskServiceLocal = TaskServiceLocal();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -120,7 +122,7 @@ class _AddTaskState extends State<AddTask> {
                   onFieldSubmitted: (term) {
                     if (!_tagController.text.isEmpty) {
                       setState(() {
-                        ITag tag = new ITag('');
+                        ITag tag = new ITag(tagName: '');
                         tag.tagName = _tagController.text.trim();
                         tags.add(tag);
                         _tagController.clear();
@@ -187,7 +189,7 @@ class _AddTaskState extends State<AddTask> {
         status: TaskStatus.New);
 
     // start of http
-    http.Response result = await _taskService.postTask(newTask);
+    http.Response result = await _taskServiceLocal.postTask(newTask);
     if (result.statusCode == 201) {
       setState(() {
         Navigator.pop(context);

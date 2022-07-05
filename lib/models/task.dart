@@ -47,8 +47,10 @@ class ITask {
       default:
         break;
     }
-    for (Map<String, dynamic> tag in taskMap['tags']) {
-      tags!.add(ITag.fromJson(tag));
+    if (taskMap['tags'] != null) {
+      for (Map<String, dynamic> tag in taskMap['tags']) {
+        tags!.add(ITag.fromJson(tag));
+      }
     }
   }
 
@@ -59,7 +61,9 @@ class ITask {
     }
     data['taskName'] = taskName;
     data['taskDescription'] = taskDescription;
-    data['tags'] = tags;
+    if (data['tags'] != null) {
+      data['tags'] = tags;
+    }
     switch (status) {
       case TaskStatus.New:
         data['status'] = 0;
@@ -74,7 +78,44 @@ class ITask {
         break;
     }
 
+    if (data['dateCreated'] != null) {
+      data['dateCreated'] = dateCreated;
+    }
+    if (data['dateModified'] != null) {
+      data['dateModified'] = dateModified;
+    }
+    if (data['dateCompleted'] != null) {
+      data['dateCompleted'] = dateCompleted;
+    }
+
     return data;
+  }
+
+  Map<String, dynamic> toMap() {
+    int convertedStatus = 0;
+
+    switch (status) {
+      case TaskStatus.New:
+        convertedStatus = 0;
+        break;
+      case TaskStatus.InProgress:
+        convertedStatus = 1;
+        break;
+      case TaskStatus.Completed:
+        convertedStatus = 2;
+        break;
+      default:
+        break;
+    }
+    taskId = faker.guid.guid();
+    return {
+      'taskId': taskId,
+      'taskName': taskName,
+      'taskDescription': taskDescription,
+      'dateCreated': DateTime.now().toIso8601String(),
+      'dateModified': DateTime.now().toIso8601String(),
+      'status': convertedStatus
+    };
   }
 }
 
@@ -83,13 +124,17 @@ class ITag {
   String tagName = '';
   String? taskId = '';
 
-  ITag(this.tagName);
+  ITag({required this.tagName});
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    // data['tagId'] = tagId;
+    if (data['tagId'] != null) {
+      data['tagId'] = tagId;
+    }
     data['tagName'] = tagName;
-    // data['taskId'] = taskId;
+    if (data['taskId'] != null) {
+      data['taskId'] = taskId;
+    }
     return data;
   }
 
@@ -98,13 +143,16 @@ class ITag {
     tagName = taskMap['tagName'];
     taskId = taskMap['taskId'];
   }
+
+  Map<String, dynamic> toMap() {
+    return {'tagId': faker.guid.guid(), 'tagName': tagName, 'taskId': taskId};
+  }
 }
 
 enum TaskStatus { New, InProgress, Completed }
 
 //Database
-final String tableTasks = 'tasks';
-final String tableTags = 'tags';
+
 
 // class Task {
 //   // String? taskId = faker.guid.guid();
@@ -125,23 +173,23 @@ final String tableTags = 'tags';
 //       this.dateCompleted,
 //       required this.status});
 
-//   Task copy({
-//     int? taskId,
-//     String? taskName,
-//     String? taskDescription,
-//     DateTime? dateCreated,
-//     DateTime? dateModified,
-//     DateTime? dateCompleted,
-//     int? status,
-//   }) =>
-//       Task(
-//           taskId: taskId ?? this.taskId,
-//           taskName: taskName ?? this.taskName,
-//           taskDescription: taskDescription ?? this.taskDescription,
-//           dateCreated: dateCreated ?? this.dateCreated,
-//           dateModified: dateModified ?? this.dateModified,
-//           dateCompleted: dateCompleted ?? this.dateCompleted,
-//           status: status ?? this.status);
+  // Task copy({
+  //   int? taskId,
+  //   String? taskName,
+  //   String? taskDescription,
+  //   DateTime? dateCreated,
+  //   DateTime? dateModified,
+  //   DateTime? dateCompleted,
+  //   int? status,
+  // }) =>
+  //     Task(
+  //         taskId: taskId ?? this.taskId,
+  //         taskName: taskName ?? this.taskName,
+  //         taskDescription: taskDescription ?? this.taskDescription,
+  //         dateCreated: dateCreated ?? this.dateCreated,
+  //         dateModified: dateModified ?? this.dateModified,
+  //         dateCompleted: dateCompleted ?? this.dateCompleted,
+  //         status: status ?? this.status);
 
 //   static Task fromJson(Map<String, Object?> json) => Task(
 //       taskId: json[TaskFields.taskId] as int?,
