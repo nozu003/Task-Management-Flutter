@@ -122,7 +122,8 @@ class _ViewTaskState extends State<ViewTask> {
                               ListTile(
                                 title: Text('Delete task'),
                                 leading: Icon(Icons.delete),
-                                onTap: () => Navigator.of(context).pop(),
+                                onTap: () =>
+                                    {deleteTask(), Navigator.of(context).pop()},
                               )
                             ],
                           ),
@@ -136,6 +137,14 @@ class _ViewTaskState extends State<ViewTask> {
         ),
       )),
     );
+  }
+
+  Future deleteTask() async {
+    http.Response result = await _taskServiceAPI.deleteTask(widget.taskId);
+    if (result.statusCode == 204) {
+      _taskServiceLocal.deleteTask(widget.taskId);
+      Navigator.pop(context);
+    }
   }
 
   Future updateTask() async {

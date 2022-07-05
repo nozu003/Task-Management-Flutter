@@ -8,7 +8,6 @@ import 'package:task_management_v2/services/task_service_api.dart';
 import 'package:task_management_v2/views/home_screen.dart';
 import 'package:task_management_v2/views/view_task_screen.dart';
 import 'package:task_management_v2/shared/menu_bottom.dart';
-
 import '../repository/api/task_repository.dart';
 import '../models/task.dart';
 import '../services/task_service_local.dart';
@@ -30,7 +29,7 @@ class _NewTasksState extends State<NewTasks> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Back'),
+          title: Text('New Tasks'),
         ),
         bottomNavigationBar: MenuBottom(),
         body: ListView.builder(
@@ -228,9 +227,9 @@ class _NewTasksState extends State<NewTasks> {
       _taskServiceLocal.updateTask(task.taskId!, localUpdatedTask);
 
       setState(() {
-        widget.tasks[widget.tasks.indexWhere(
-            (element) => element.taskId == updatedTask.taskId)] = updatedTask;
-        // widget.callbackFn();
+        widget.tasks.removeAt(widget.tasks
+            .indexWhere((element) => element.taskId == updatedTask.taskId));
+        widget.callbackFn();
       });
     }
   }

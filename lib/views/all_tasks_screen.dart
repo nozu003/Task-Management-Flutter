@@ -30,7 +30,7 @@ class _AllTasksState extends State<AllTasks> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Back'),
+          title: Text('Tasks'),
         ),
         bottomNavigationBar: MenuBottom(),
         body: ListView.builder(
@@ -197,6 +197,8 @@ class _AllTasksState extends State<AllTasks> {
     http.Response result = await _taskServiceAPI.deleteTask(taskId);
     if (result.statusCode == 204) {
       _taskServiceLocal.deleteTask(taskId);
+      widget.tasks.removeAt(
+          widget.tasks.indexWhere((element) => element.taskId == taskId));
     }
   }
 

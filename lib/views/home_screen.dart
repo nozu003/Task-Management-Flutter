@@ -10,7 +10,9 @@ import 'package:task_management_v2/services/task_service_api.dart';
 import 'package:task_management_v2/services/task_service_local.dart';
 import 'package:task_management_v2/views/add_task_screen.dart';
 import 'package:task_management_v2/views/all_tasks_screen.dart';
+import 'package:task_management_v2/views/completed_task_screen.dart';
 import 'package:task_management_v2/views/new_tasks_screen.dart';
+import 'package:task_management_v2/views/ongoing_tasks_screen.dart';
 import 'package:task_management_v2/views/view_task_screen.dart';
 import 'package:task_management_v2/shared/menu_bottom.dart';
 
@@ -42,6 +44,10 @@ class _HomePageState extends State<HomePage> {
       tasks.addAll(result);
       newTasks
           .addAll(tasks.where((element) => element.status == TaskStatus.New));
+      ongoingTasks.addAll(
+          tasks.where((element) => element.status == TaskStatus.InProgress));
+      completedTasks.addAll(
+          tasks.where((element) => element.status == TaskStatus.Completed));
     });
 
     // var result = await TasksDatabase.instance.getTasks();
@@ -181,11 +187,6 @@ class _HomePageState extends State<HomePage> {
                                                                     (value) {
                                                                   switch (
                                                                       value) {
-                                                                    case 'Update':
-                                                                      Navigator.pushNamed(
-                                                                          context,
-                                                                          '/update');
-                                                                      break;
                                                                     case 'Delete':
                                                                       _onDeletePressed(
                                                                           i);
@@ -203,15 +204,6 @@ class _HomePageState extends State<HomePage> {
                                                                     (BuildContext
                                                                             context) =>
                                                                         <PopupMenuEntry>[
-                                                                  const PopupMenuItem(
-                                                                    value:
-                                                                        'Update',
-                                                                    child:
-                                                                        ListTile(
-                                                                      title: Text(
-                                                                          'Update'),
-                                                                    ),
-                                                                  ),
                                                                   const PopupMenuItem(
                                                                     value:
                                                                         'Delete',
@@ -316,35 +308,49 @@ class _HomePageState extends State<HomePage> {
                                     Expanded(
                                       child: Padding(
                                         padding: const EdgeInsets.all(5),
-                                        child: Card(
-                                          color: Color(0xffFFF8DD),
-                                          elevation: 0.0,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10)),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(10),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const Icon(
-                                                  Icons.pending_actions,
-                                                  size: 40,
-                                                  color: Color(0xffFFC700),
-                                                ),
-                                                Padding(
-                                                    padding: EdgeInsets.all(5)),
-                                                const Text('In-Progress Tasks',
-                                                    style: TextStyle(
-                                                        color:
-                                                            Color(0xffFFC700),
-                                                        letterSpacing: .5,
-                                                        fontWeight:
-                                                            FontWeight.bold))
-                                              ],
+                                        child: GestureDetector(
+                                          onTap: () => {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        OngoingTasks(
+                                                            tasks: ongoingTasks,
+                                                            callbackFn:
+                                                                callback)))
+                                          },
+                                          child: Card(
+                                            color: Color(0xffFFF8DD),
+                                            elevation: 0.0,
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10)),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  const Icon(
+                                                    Icons.pending_actions,
+                                                    size: 40,
+                                                    color: Color(0xffFFC700),
+                                                  ),
+                                                  Padding(
+                                                      padding:
+                                                          EdgeInsets.all(5)),
+                                                  const Text(
+                                                      'In-Progress Tasks',
+                                                      style: TextStyle(
+                                                          color:
+                                                              Color(0xffFFC700),
+                                                          letterSpacing: .5,
+                                                          fontWeight:
+                                                              FontWeight.bold))
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -460,35 +466,49 @@ class _HomePageState extends State<HomePage> {
                                     Expanded(
                                       child: Padding(
                                         padding: const EdgeInsets.all(5),
-                                        child: Card(
-                                          color: Color(0xffE8FFF3),
-                                          elevation: 0.0,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10)),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(10),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const Icon(
-                                                  Icons.check_circle,
-                                                  size: 40,
-                                                  color: Color(0xff50CD89),
-                                                ),
-                                                Padding(
-                                                    padding: EdgeInsets.all(5)),
-                                                const Text('Completed Tasks',
-                                                    style: TextStyle(
-                                                        color:
-                                                            Color(0xff50CD89),
-                                                        letterSpacing: .5,
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                              ],
+                                        child: GestureDetector(
+                                          onTap: () => {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        CompletedTasks(
+                                                            tasks:
+                                                                completedTasks,
+                                                            callbackFn:
+                                                                callback)))
+                                          },
+                                          child: Card(
+                                            color: Color(0xffE8FFF3),
+                                            elevation: 0.0,
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10)),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  const Icon(
+                                                    Icons.check_circle,
+                                                    size: 40,
+                                                    color: Color(0xff50CD89),
+                                                  ),
+                                                  Padding(
+                                                      padding:
+                                                          EdgeInsets.all(5)),
+                                                  const Text('Completed Tasks',
+                                                      style: TextStyle(
+                                                          color:
+                                                              Color(0xff50CD89),
+                                                          letterSpacing: .5,
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
