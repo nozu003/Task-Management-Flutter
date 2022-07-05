@@ -32,7 +32,6 @@ class _ViewTaskState extends State<ViewTask> {
 
   Future getTaskById() async {
     var result = await _taskServiceAPI.getTaskById(widget.taskId);
-    // var result = await TasksDatabase.instance.getTaskById(widget.taskId);
     task = ITask(
         taskId: result.taskId,
         taskName: result.taskName,
@@ -98,7 +97,7 @@ class _ViewTaskState extends State<ViewTask> {
               children: [
                 Tooltip(
                     message: 'Created at ${task.dateCreated}',
-                    child: task.dateCompleted!.isEmpty
+                    child: task.dateCompleted == ''
                         ? Text('Edited ${task.dateModified}')
                         : Text('Completed at ${task.dateCompleted}')),
                 Spacer(),
@@ -147,11 +146,14 @@ class _ViewTaskState extends State<ViewTask> {
         taskId: task.taskId,
         taskName: taskName,
         taskDescription: taskDescription,
+        tags: tags,
         status: task.status);
 
     http.Response result =
         await _taskServiceAPI.updateTask(widget.taskId, task);
-    print(result.statusCode);
+    if (result.statusCode == 200) {
+      _taskServiceLocal.updateTask(widget.taskId, task);
+    }
     // var result = await TasksDatabase.instance.updateTask(task);
   }
 }

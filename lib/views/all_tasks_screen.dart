@@ -72,7 +72,7 @@ class _AllTasksState extends State<AllTasks> {
                     endActionPane: ActionPane(
                       motion: ScrollMotion(),
                       children: [
-                        if (widget.tasks[index].status != TaskStatus.Completed)
+                        if (task.status != TaskStatus.Completed)
                           SlidableAction(
                             // An action can be bigger than the others.
                             flex: 2,
@@ -224,7 +224,9 @@ class _AllTasksState extends State<AllTasks> {
     http.Response result =
         await _taskServiceAPI.updateTask(task.taskId!, updatedTask);
     if (result.statusCode == 200) {
-      _taskServiceLocal.updateTask(task.taskId!, updatedTask);
+      ITask localUpdatedTask = ITask.fromJson(jsonDecode(result.body));
+      _taskServiceLocal.updateTask(task.taskId!, localUpdatedTask);
+
       setState(() {
         widget.tasks[widget.tasks.indexWhere(
             (element) => element.taskId == updatedTask.taskId)] = updatedTask;

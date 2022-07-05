@@ -6,6 +6,7 @@ import 'package:task_management_v2/models/task.dart';
 import 'package:task_management_v2/services/task_service_api.dart';
 import 'package:task_management_v2/services/task_service_local.dart';
 import 'package:task_management_v2/views/home_screen.dart';
+import 'package:top_snackbar_flutter/safe_area_values.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 import 'package:http/http.dart' as http;
 
@@ -192,12 +193,11 @@ class _AddTaskState extends State<AddTask> {
 
     // start of http
     http.Response result = await _taskService.postTask(newTask);
-    print(jsonEncode(newTask));
-    print(result.statusCode);
     if (result.statusCode == 201) {
+      ITask localTask = ITask.fromJson(jsonDecode(result.body));
       setState(() {
         //add to local db
-        _taskServiceLocal.postTask(newTask);
+        _taskServiceLocal.postTask(localTask);
         Navigator.pop(context);
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => HomePage()));
@@ -205,35 +205,25 @@ class _AddTaskState extends State<AddTask> {
         showTopSnackBar(
             context,
             TopSnackBar(
-                child: Card(
-                  child: ListTile(
-                    title: Text('Task added successfully'),
-                    leading: Icon(
-                      Icons.check_circle,
-                      color: Color(0xff50CD89),
-                    ),
+              child: Card(
+                child: ListTile(
+                  title: Text('Task added successfully'),
+                  leading: Icon(
+                    Icons.check_circle,
+                    color: Color(0xff50CD89),
                   ),
                 ),
-                onDismissed: () {},
-                animationDuration: Duration(milliseconds: 550),
-                reverseAnimationDuration: Duration(milliseconds: 550),
-                displayDuration: Duration(milliseconds: 1250),
-                padding: EdgeInsets.all(16),
-                curve: Curves.elasticOut,
-                reverseCurve: Curves.linearToEaseOut));
+              ),
+              onDismissed: () {},
+              animationDuration: Duration(milliseconds: 550),
+              reverseAnimationDuration: Duration(milliseconds: 550),
+              displayDuration: Duration(milliseconds: 1250),
+              padding: EdgeInsets.all(16),
+              curve: Curves.elasticOut,
+              reverseCurve: Curves.linearToEaseOut,
+              safeAreaValues: SafeAreaValues(),
+            ));
       });
     }
-    // end of http
-
-    //Local storage
-    // final task = Task(
-    //     taskName: taskName,
-    //     taskDescription: taskDescription,
-    //     status: 0,
-    //     dateCreated: DateTime.now(),
-    //     dateModified: DateTime.now());
-
-    // await TasksDatabase.instance.create(task);
-    // TasksDatabase.instance.close();
   }
 }

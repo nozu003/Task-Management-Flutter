@@ -10,6 +10,7 @@ import 'package:task_management_v2/services/task_service_api.dart';
 import 'package:task_management_v2/services/task_service_local.dart';
 import 'package:task_management_v2/views/add_task_screen.dart';
 import 'package:task_management_v2/views/all_tasks_screen.dart';
+import 'package:task_management_v2/views/new_tasks_screen.dart';
 import 'package:task_management_v2/views/view_task_screen.dart';
 import 'package:task_management_v2/shared/menu_bottom.dart';
 
@@ -24,6 +25,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late List<ITask> tasks = [];
+  late List<ITask> newTasks = [];
+  late List<ITask> ongoingTasks = [];
+  late List<ITask> completedTasks = [];
   final TaskServiceAPI _taskServiceAPI = TaskServiceAPI();
   final TaskServiceLocal _taskServiceLocal = TaskServiceLocal();
 
@@ -36,7 +40,8 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       tasks.clear();
       tasks.addAll(result);
-      print(jsonEncode(tasks[0].tags));
+      newTasks
+          .addAll(tasks.where((element) => element.status == TaskStatus.New));
     });
 
     // var result = await TasksDatabase.instance.getTasks();
@@ -348,35 +353,48 @@ class _HomePageState extends State<HomePage> {
                                     Expanded(
                                       child: Padding(
                                         padding: const EdgeInsets.all(5),
-                                        child: Card(
-                                          color: Color(0xffF1FAFF),
-                                          elevation: 0.0,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10)),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(10),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                const Icon(
-                                                  Icons.fiber_new_rounded,
-                                                  size: 40,
-                                                  color: Color(0xff009EF7),
-                                                ),
-                                                Padding(
-                                                    padding: EdgeInsets.all(5)),
-                                                const Text('New Tasks',
-                                                    style: TextStyle(
-                                                        color:
-                                                            Color(0xff009EF7),
-                                                        letterSpacing: .5,
-                                                        fontWeight:
-                                                            FontWeight.bold))
-                                              ],
+                                        child: GestureDetector(
+                                          onTap: () => {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        NewTasks(
+                                                            tasks: newTasks,
+                                                            callbackFn:
+                                                                callback)))
+                                          },
+                                          child: Card(
+                                            color: Color(0xffF1FAFF),
+                                            elevation: 0.0,
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10)),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  const Icon(
+                                                    Icons.fiber_new_rounded,
+                                                    size: 40,
+                                                    color: Color(0xff009EF7),
+                                                  ),
+                                                  Padding(
+                                                      padding:
+                                                          EdgeInsets.all(5)),
+                                                  const Text('New Tasks',
+                                                      style: TextStyle(
+                                                          color:
+                                                              Color(0xff009EF7),
+                                                          letterSpacing: .5,
+                                                          fontWeight:
+                                                              FontWeight.bold))
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
