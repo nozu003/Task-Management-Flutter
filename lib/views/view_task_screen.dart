@@ -161,7 +161,8 @@ class _ViewTaskState extends State<ViewTask> {
     http.Response result =
         await _taskServiceAPI.updateTask(widget.taskId, task);
     if (result.statusCode == 200) {
-      _taskServiceLocal.updateTask(widget.taskId, task);
+      ITask localUpdatedTask = ITask.fromJson(jsonDecode(result.body));
+      _taskServiceLocal.updateTask(widget.taskId, localUpdatedTask);
     }
     // var result = await TasksDatabase.instance.updateTask(task);
   }
